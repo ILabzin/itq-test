@@ -1,0 +1,56 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-documents-table
+      author: Labzin Ivan
+      changes:
+        - createTable:
+            tableName: documents
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: document_number
+                  type: serial
+                  autoIncrement: true
+                  constraints:
+                    unique: true
+                    nullable: false
+
+              - column:
+                  name: author
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - sql:
+            sql: |
+              ALTER TABLE documents 
+              ADD CONSTRAINT chk_documents_status 
+              CHECK (status IN ('DRAFT', 'SUBMITTED', 'APPROVED'));

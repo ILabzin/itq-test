@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-document-history-table
+      author: Labzin Ivan
+      changes:
+        - createTable:
+            tableName: document_history
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: document_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_document_history_document
+                    referencedTableName: documents
+                    referencedColumnNames: id
+
+              - column:
+                  name: action
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: action_by
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: action_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+              - column:
+                  name: comment
+                  type: text
+
+        - sql:
+            sql: |
+              ALTER TABLE document_history 
+              ADD CONSTRAINT chk_document_history_status 
+              CHECK (action IN ('SUBMITTED', 'APPROVED'));

@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-approval-registry-table
+      author: Labzin Ivan
+      changes:
+        - createTable:
+            tableName: approval_registry
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: document_id
+                  type: uuid
+                  constraints:
+                    unique: true
+                    nullable: false

@@ -5,6 +5,6 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
-      - POSTGRES_DB=document-service-itq
+      - POSTGRES_DB=document_service_itq
     ports:
       - '5432:5432'
