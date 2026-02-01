@@ -6,11 +6,17 @@ import com.labzin.document_service_itq_test_api.dto.ApprovalRequest;
 import com.labzin.document_service_itq_test_api.dto.ApprovalResponse;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
+import com.labzin.document_service_itq_test_api.dto.DocumentSearchCriteria;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentsDtoList;
+import com.labzin.document_service_itq_test_api.persistance.entity.Document;
 import com.labzin.document_service_itq_test_api.service.DocumentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.w3c.dom.views.DocumentView;
 
 import java.util.List;
 import java.util.UUID;
@@ -66,5 +73,18 @@ public class DocumentServiceController {
 
         ApprovalResponse response = documentService.approve(request.ids());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<GetDocumentResponse>> searchDocuments(
+            DocumentSearchCriteria criteria,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable) {
+
+        Page<GetDocumentResponse> result = documentService.searchDocuments(criteria, pageable);
+        return ResponseEntity.ok(result);
     }
 }
