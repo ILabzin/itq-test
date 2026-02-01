@@ -7,6 +7,7 @@ import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.DocumentHistoryResponse;
+import com.labzin.document_service_itq_test_api.dto.DocumentSearchCriteria;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentsDtoList;
 import com.labzin.document_service_itq_test_api.exception.NotFoundException;
@@ -207,6 +208,22 @@ public class DocumentService {
         approvalRegistryRepository.save(approvalRegistry);
 
         return StatusChangeResult.SUCCESS;
+    }
+
+    public Page<GetDocumentResponse> searchDocuments(
+            DocumentSearchCriteria criteria,
+            Pageable pageable) {
+
+        Specification<Document> spec = Specifications.getDocumentSpec(
+                criteria.status(),
+                criteria.author(),
+                criteria.createdFrom(),
+                criteria.createdTo()
+        );
+
+        Page<Document> documents = documentRepository.findAll(spec, pageable);
+
+        return documents.map(documentMapper::toGetDocumentResponse);
     }
 }
 
