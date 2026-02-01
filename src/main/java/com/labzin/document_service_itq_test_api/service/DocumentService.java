@@ -1,5 +1,6 @@
 package com.labzin.document_service_itq_test_api.service;
 
+import com.labzin.document_service_itq_test_api.dto.AgreementResponse;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
@@ -13,6 +14,7 @@ import com.labzin.document_service_itq_test_api.mapper.DocumentMapper;
 import com.labzin.document_service_itq_test_api.persistance.entity.Document;
 import com.labzin.document_service_itq_test_api.persistance.entity.DocumentHistory;
 import com.labzin.document_service_itq_test_api.persistance.enums.DocumentStatus;
+import com.labzin.document_service_itq_test_api.persistance.enums.StatusChangeResult;
 import com.labzin.document_service_itq_test_api.persistance.repository.DocumentHistoryRepository;
 import com.labzin.document_service_itq_test_api.persistance.repository.DocumentRepository;
 
@@ -25,9 +27,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -117,6 +122,36 @@ public class DocumentService {
                 .total(pageResult.getTotalElements())
                 .totalPages(pageResult.getTotalPages())
                 .build();
+    }
+
+    @Transactional
+    public AgreementResponse agreement(List<UUID> ids) {
+        Map<UUID, StatusChangeResult> results = new HashMap<>();
+
+        for (UUID id : ids) {
+            StatusChangeResult status = processDocumentStatusChange(id);
+            results.put(id, status);
+        }
+
+        return new AgreementResponse(results);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public StatusChangeResult processDocumentStatusChange(UUID id) {
+
+            Document document = documentRepository.findById(id).orElse(null);
+
+            if (document == null) {
+                return StatusChangeResult.NOT_FOUND;
+            }
+
+            if (document.getStatus() != DocumentStatus.DRAFT) {
+                return StatusChangeResult.CONFLICT;
+            }
+
+            document.setStatus(DocumentStatus.SUBMITTED);
+            return StatusChangeResult.SUCCESS;
+
     }
 }
 
