@@ -3,15 +3,20 @@ package com.labzin.document_service_itq_test_api.controller;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentResponse;
+import com.labzin.document_service_itq_test_api.dto.GetDocumentsDtoList;
 import com.labzin.document_service_itq_test_api.service.DocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,12 +27,23 @@ public class DocumentServiceController {
     private final DocumentService documentService;
 
     @PostMapping("/create")
-    public CreateDocumentResponse createDocument(@RequestBody CreateDocumentRequest request) {
-        return documentService.createDocument(request);
+    public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(documentService.createDocument(request));
     }
 
     @GetMapping("/{id}")
     public GetDocumentResponse getDocument(@PathVariable UUID id) {
         return documentService.getDocument(id);
+    }
+
+    @GetMapping("/listDocuments")
+    public GetDocumentsDtoList getDocuments(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) List<UUID> uuids
+    ) {
+        return documentService.getDocuments(page, size, sortBy, sortDir, uuids);
     }
 }

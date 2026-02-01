@@ -65,6 +65,4 @@ public class Document {
     @Builder.Default
     private List<DocumentHistory> history = new ArrayList<>();
 
-    @OneToOne(mappedBy = "document", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private ApprovalRegistry approvalRegistry;
 }
