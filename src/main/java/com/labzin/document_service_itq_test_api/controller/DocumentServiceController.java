@@ -2,6 +2,8 @@ package com.labzin.document_service_itq_test_api.controller;
 
 import com.labzin.document_service_itq_test_api.dto.AgreementRequest;
 import com.labzin.document_service_itq_test_api.dto.AgreementResponse;
+import com.labzin.document_service_itq_test_api.dto.ApprovalRequest;
+import com.labzin.document_service_itq_test_api.dto.ApprovalResponse;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentResponse;
@@ -55,6 +57,14 @@ public class DocumentServiceController {
             @Valid @RequestBody AgreementRequest request) {
 
         AgreementResponse response = documentService.agreement(request.ids());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/approve")
+    public ResponseEntity<ApprovalResponse> approve(
+            @Valid @RequestBody ApprovalRequest request) {
+
+        ApprovalResponse response = documentService.approve(request.ids());
         return ResponseEntity.ok(response);
     }
 }
