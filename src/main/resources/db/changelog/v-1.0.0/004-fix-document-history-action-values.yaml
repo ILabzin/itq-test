@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-fix-document-history-action-values
+      author: Labzin Ivan
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE document_history 
+              DROP CONSTRAINT IF EXISTS chk_document_history_status;
+
+        - sql:
+            sql: |
+              UPDATE document_history 
+              SET action = CASE 
+                WHEN action = 'SUBMITTED' THEN 'SUBMIT'
+                WHEN action = 'APPROVED' THEN 'APPROVE'
+              END;
+
+        - sql:
+            sql: |
+              ALTER TABLE document_history 
+              ADD CONSTRAINT chk_document_history_status 
+              CHECK (action IN ('SUBMIT', 'APPROVE'));

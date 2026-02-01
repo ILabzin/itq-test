@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/v-1.0.0/002-create-document-history-table.yaml
   - include:
       file: db/changelog/v-1.0.0/003-create-approval-registry-table.yaml
+  - include:
+      file: db/changelog/v-1.0.0/004-fix-document-history-action-values.yaml
