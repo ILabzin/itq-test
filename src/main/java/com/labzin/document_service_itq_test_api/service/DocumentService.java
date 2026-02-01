@@ -1,6 +1,8 @@
 package com.labzin.document_service_itq_test_api.service;
 
 import com.labzin.document_service_itq_test_api.dto.AgreementResponse;
+import com.labzin.document_service_itq_test_api.dto.ApprovalRequest;
+import com.labzin.document_service_itq_test_api.dto.ApprovalResponse;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
@@ -11,10 +13,13 @@ import com.labzin.document_service_itq_test_api.exception.NotFoundException;
 import com.labzin.document_service_itq_test_api.exception.ValidationException;
 import com.labzin.document_service_itq_test_api.mapper.DocumentHistoryMapper;
 import com.labzin.document_service_itq_test_api.mapper.DocumentMapper;
+import com.labzin.document_service_itq_test_api.persistance.entity.ApprovalRegistry;
 import com.labzin.document_service_itq_test_api.persistance.entity.Document;
 import com.labzin.document_service_itq_test_api.persistance.entity.DocumentHistory;
+import com.labzin.document_service_itq_test_api.persistance.enums.Action;
 import com.labzin.document_service_itq_test_api.persistance.enums.DocumentStatus;
 import com.labzin.document_service_itq_test_api.persistance.enums.StatusChangeResult;
+import com.labzin.document_service_itq_test_api.persistance.repository.ApprovalRegistryRepository;
 import com.labzin.document_service_itq_test_api.persistance.repository.DocumentHistoryRepository;
 import com.labzin.document_service_itq_test_api.persistance.repository.DocumentRepository;
 
@@ -46,6 +51,7 @@ public class DocumentService {
     private final DocumentHistoryRepository documentHistoryRepository;
     private final DocumentHistoryMapper documentHistoryMapper;
     private final DocumentMapper documentMapper;
+    private final ApprovalRegistryRepository approvalRegistryRepository;
 
     @Transactional
     public CreateDocumentResponse createDocument(CreateDocumentRequest request) {
@@ -126,6 +132,7 @@ public class DocumentService {
 
     @Transactional
     public AgreementResponse agreement(List<UUID> ids) {
+
         Map<UUID, StatusChangeResult> results = new HashMap<>();
 
         for (UUID id : ids) {
@@ -152,6 +159,54 @@ public class DocumentService {
             document.setStatus(DocumentStatus.SUBMITTED);
             return StatusChangeResult.SUCCESS;
 
+    }
+
+    @Transactional
+    public ApprovalResponse approve(List<UUID> ids) {
+
+        Map<UUID, StatusChangeResult> results = new HashMap<>();
+
+        for (UUID id : ids) {
+
+            StatusChangeResult result = processDocumentApproval(id);
+            results.put(id, result);
+
+        }
+
+        return new ApprovalResponse(results);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public StatusChangeResult processDocumentApproval(UUID id) {
+
+        Document document = documentRepository.findById(id).orElse(null);
+
+        if (document == null) {
+            return StatusChangeResult.NOT_FOUND;
+        }
+
+        if (document.getStatus() != DocumentStatus.SUBMITTED) {
+            return StatusChangeResult.CONFLICT;
+        }
+
+        document.setStatus(DocumentStatus.APPROVED);
+        documentRepository.save(document);
+
+        DocumentHistory history = DocumentHistory.builder()
+                .document(document)
+                .action(Action.APPROVE)
+                .actionBy(document.getAuthor())
+                .comment("Документ утвержден")
+                .build();
+        documentHistoryRepository.save(history);
+
+        ApprovalRegistry approvalRegistry = ApprovalRegistry.builder()
+                .document(document)
+                .build();
+
+        approvalRegistryRepository.save(approvalRegistry);
+
+        return StatusChangeResult.SUCCESS;
     }
 }
 

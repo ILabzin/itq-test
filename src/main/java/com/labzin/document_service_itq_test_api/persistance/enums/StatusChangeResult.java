@@ -4,5 +4,7 @@ public enum StatusChangeResult {
 
     SUCCESS,
     CONFLICT,
-    NOT_FOUND;
+    NOT_FOUND,
+
+    FAILED_REGISTRATION;
 }
