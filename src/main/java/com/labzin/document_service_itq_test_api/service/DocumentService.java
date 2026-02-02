@@ -52,7 +52,7 @@ public class DocumentService {
     private final DocumentHistoryRepository documentHistoryRepository;
     private final DocumentHistoryMapper documentHistoryMapper;
     private final DocumentMapper documentMapper;
-    private final ApprovalRegistryRepository approvalRegistryRepository;
+    private final DocumentApprovalService documentApprovalService;
 
     @Transactional
     public CreateDocumentResponse createDocument(CreateDocumentRequest request) {
@@ -144,7 +144,7 @@ public class DocumentService {
         return new AgreementResponse(results);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+
     public StatusChangeResult processDocumentStatusChange(UUID id) {
 
             Document document = documentRepository.findById(id).orElse(null);
@@ -159,7 +159,6 @@ public class DocumentService {
 
             document.setStatus(DocumentStatus.SUBMITTED);
             return StatusChangeResult.SUCCESS;
-
     }
 
     @Transactional
@@ -169,45 +168,12 @@ public class DocumentService {
 
         for (UUID id : ids) {
 
-            StatusChangeResult result = processDocumentApproval(id);
+            StatusChangeResult result = documentApprovalService.processDocumentApproval(id);
             results.put(id, result);
 
         }
 
         return new ApprovalResponse(results);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public StatusChangeResult processDocumentApproval(UUID id) {
-
-        Document document = documentRepository.findById(id).orElse(null);
-
-        if (document == null) {
-            return StatusChangeResult.NOT_FOUND;
-        }
-
-        if (document.getStatus() != DocumentStatus.SUBMITTED) {
-            return StatusChangeResult.CONFLICT;
-        }
-
-        document.setStatus(DocumentStatus.APPROVED);
-        documentRepository.save(document);
-
-        DocumentHistory history = DocumentHistory.builder()
-                .document(document)
-                .action(Action.APPROVE)
-                .actionBy(document.getAuthor())
-                .comment("Документ утвержден")
-                .build();
-        documentHistoryRepository.save(history);
-
-        ApprovalRegistry approvalRegistry = ApprovalRegistry.builder()
-                .document(document)
-                .build();
-
-        approvalRegistryRepository.save(approvalRegistry);
-
-        return StatusChangeResult.SUCCESS;
     }
 
     public Page<GetDocumentResponse> searchDocuments(
