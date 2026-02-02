@@ -4,12 +4,15 @@ import com.labzin.document_service_itq_test_api.dto.AgreementRequest;
 import com.labzin.document_service_itq_test_api.dto.AgreementResponse;
 import com.labzin.document_service_itq_test_api.dto.ApprovalRequest;
 import com.labzin.document_service_itq_test_api.dto.ApprovalResponse;
+import com.labzin.document_service_itq_test_api.dto.ConcurrentTestRequest;
+import com.labzin.document_service_itq_test_api.dto.ConcurrentTestResponse;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentRequest;
 import com.labzin.document_service_itq_test_api.dto.CreateDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.DocumentSearchCriteria;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentResponse;
 import com.labzin.document_service_itq_test_api.dto.GetDocumentsDtoList;
 import com.labzin.document_service_itq_test_api.persistance.entity.Document;
+import com.labzin.document_service_itq_test_api.service.ConcurrentTestService;
 import com.labzin.document_service_itq_test_api.service.DocumentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,7 @@ import java.util.UUID;
 public class DocumentServiceController {
 
     private final DocumentService documentService;
+    private final ConcurrentTestService concurrentTestService;
 
     @PostMapping("/create")
     public ResponseEntity<CreateDocumentResponse> createDocument(@RequestBody CreateDocumentRequest request) {
@@ -86,5 +90,13 @@ public class DocumentServiceController {
 
         Page<GetDocumentResponse> result = documentService.searchDocuments(criteria, pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/concurrent-test")
+    public ConcurrentTestResponse ConcurrentTest(
+            @PathVariable UUID id,
+            @RequestBody ConcurrentTestRequest request) {
+
+        return concurrentTestService.runConcurrentTest(id, request.threads(), request.attempts());
     }
 }

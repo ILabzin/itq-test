@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-version-to-documents
+      author: Labzin Ivan
+      changes:
+        - addColumn:
+            tableName: documents
+            columns:
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValue: 0
+                  constraints:
+                    nullable: false

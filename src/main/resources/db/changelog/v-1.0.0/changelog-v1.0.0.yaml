@@ -7,3 +7,8 @@ databaseChangeLog:
       file: db/changelog/v-1.0.0/003-create-approval-registry-table.yaml
   - include:
       file: db/changelog/v-1.0.0/004-fix-document-history-action-values.yaml
+  - include:
+      file: db/changelog/v-1.0.0/005-add-version-to-documents.yaml
+
+
+
